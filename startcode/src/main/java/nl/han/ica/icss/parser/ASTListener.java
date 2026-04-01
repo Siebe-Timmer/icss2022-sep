@@ -3,10 +3,10 @@ package nl.han.ica.icss.parser;
 import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.BoolLiteral;
-import nl.han.ica.icss.ast.literals.ColorLiteral;
-import nl.han.ica.icss.ast.literals.PercentageLiteral;
-import nl.han.ica.icss.ast.literals.PixelLiteral;
+import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
@@ -96,9 +96,35 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override
+	public void enterMultiplyExpression(ICSSParser.MultiplyExpressionContext ctx) {
+		currentContainer.push(new MultiplyOperation());
+	}
+
+	@Override
+	public void exitMultiplyExpression(ICSSParser.MultiplyExpressionContext ctx) {
+		Operation operation = (Operation) currentContainer.pop();
+		currentContainer.peek().addChild(operation);
+	}
+
+	@Override
+	public void enterPlusMinExpression(ICSSParser.PlusMinExpressionContext ctx) {
+		if (ctx.PLUS() != null) {
+			currentContainer.push(new AddOperation());
+		} else {
+			currentContainer.push(new SubtractOperation());
+		}
+	}
+
+	@Override
+	public void exitPlusMinExpression(ICSSParser.PlusMinExpressionContext ctx) {
+		Operation operation = (Operation) currentContainer.pop();
+		currentContainer.peek().addChild(operation);
+	}
+
+	@Override
 	public void exitVariable(ICSSParser.VariableContext ctx) {
-		if (ctx.COLOR() != null) {
-			currentContainer.peek().addChild(new ColorLiteral(ctx.COLOR().getText()));
+		if (ctx.SCALAR() != null) {
+			currentContainer.peek().addChild(new ScalarLiteral(ctx.SCALAR().getText()));
 		} else if (ctx.PIXELSIZE() != null) {
 			currentContainer.peek().addChild(new PixelLiteral(ctx.PIXELSIZE().getText()));
 		} else if (ctx.PERCENTAGE() != null) {
@@ -107,6 +133,8 @@ public class ASTListener extends ICSSBaseListener {
 			currentContainer.peek().addChild(new BoolLiteral(true));
 		} else if (ctx.FALSE() != null) {
 			currentContainer.peek().addChild(new BoolLiteral(false));
+		} else if (ctx.COLOR() != null) {
+			currentContainer.peek().addChild(new ColorLiteral(ctx.COLOR().getText()));
 		} else {
 			currentContainer.peek().addChild(new VariableReference(ctx.CAPITAL_IDENT().getText()));
 		}
