@@ -61,6 +61,7 @@ public class Checker {
         ExpressionType type = getExpressionType(declaration.expression);
 
         String prop = declaration.property.name;
+        // Dit zorgt dat het type van de waarde klopt met de property
         if (prop.equals("width") || prop.equals("height") || prop.equals("font-size")) {
             if (type != ExpressionType.PIXEL && type != ExpressionType.PERCENTAGE) {
                 declaration.setError("Property expected pixel of percentage value");
@@ -74,6 +75,7 @@ public class Checker {
 
     private void checkIfClause(IfClause ifClause) {
         ExpressionType conditionType = getExpressionType(ifClause.conditionalExpression);
+        // Dit zorgt dat de conditie van een if-statement altijd een boolean is
         if (conditionType != ExpressionType.BOOL) {
             ifClause.setError("If-condition must be of boolean type");
         }
@@ -123,16 +125,19 @@ public class Checker {
         ExpressionType left  = getExpressionType(operation.lhs);
         ExpressionType right = getExpressionType(operation.rhs);
 
+        // Checkt of er ene kleur is gebruikt in een operation, dat mag niet
         if (left == ExpressionType.COLOR || right == ExpressionType.COLOR) {
             operation.setError("Color literals are not allowed in operations");
             return ExpressionType.UNDEFINED;
         }
+        // Checkt of er een boolean is gebruikt in een operation, dat mag niet
         if (left == ExpressionType.BOOL || right == ExpressionType.BOOL) {
             operation.setError("Boolean literals are not allowed in operations");
             return ExpressionType.UNDEFINED;
         }
 
         if (operation instanceof MultiplyOperation) {
+            // Checkt of er minimaal één SCALAR is in een multiply operation
             if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
                 operation.setError("Multiply operation requires at least one scalar operand");
                 return ExpressionType.UNDEFINED;
@@ -141,6 +146,7 @@ public class Checker {
         }
 
         if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
+            // Checkt of de types hetzelfde zijn bij een plus/min som
             if (left != right) {
                 operation.setError("Operands of add/subtract must be of the same type");
                 return ExpressionType.UNDEFINED;

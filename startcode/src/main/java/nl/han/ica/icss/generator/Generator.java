@@ -27,6 +27,7 @@ public class Generator {
 		stringBuilder.append(generateSelector(stylerule.selectors));
 		for (ASTNode child : stylerule.body) {
 			if (child instanceof Declaration) {
+				// Zorgt voor twee spatie inspringingen per scopeniveau (GE02)
 				stringBuilder.append("  ").append(generateDeclaration((Declaration) child)).append("\n");
 			}
 		}

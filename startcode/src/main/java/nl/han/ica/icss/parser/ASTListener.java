@@ -34,6 +34,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void enterStylesheet(ICSSParser.StylesheetContext ctx) {
+		// Dit zorgt dat de stylesheet als root-node op de stack gezet wordt
 		Stylesheet stylesheet = new Stylesheet();
 		currentContainer.push(stylesheet);
 	}
@@ -145,6 +146,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitVariable(ICSSParser.VariableContext ctx) {
+		// Bepaal literal type
 		if (ctx.SCALAR() != null) {
 			currentContainer.peek().addChild(new ScalarLiteral(ctx.SCALAR().getText()));
 		} else if (ctx.PIXELSIZE() != null) {
